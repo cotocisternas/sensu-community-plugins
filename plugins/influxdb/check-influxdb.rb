@@ -27,12 +27,14 @@
 #   for details.
 #
 
-require 'rubygems' if RUBY_VERSION < '1.9.0'
 require 'sensu-plugin/check/cli'
 require 'net/http'
 require 'uri'
 require 'json'
 
+#
+# Check InfluxDB
+#
 class CheckInfluxDB < Sensu::Plugin::Check::CLI
   option :host,
          description: 'Host address of the InfluxDB server',
@@ -55,7 +57,7 @@ class CheckInfluxDB < Sensu::Plugin::Check::CLI
          default: false
 
   option :timeout,
-         description:            'Seconds to wait for the connection to open or read (default: 1.0s)',
+         description: 'Seconds to wait for the connection to open or read (default: 1.0s)',
          short: '-t SECONDS',
          long: '--timeout SECONDS',
          proc: proc(&:to_f),
@@ -67,11 +69,12 @@ class CheckInfluxDB < Sensu::Plugin::Check::CLI
     http.read_timeout = config[:timeout]
     http.use_ssl = config[:ssl]
     http.start do
-      status = JSON.parse(http.get('/ping').body)
-      if status == { 'status' => 'ok' }
-        ok status.to_s
+      response = http.request_head('/ping')
+      status_line = "#{response.code} #{response.message}"
+      if response.is_a?(Net::HTTPSuccess)
+        ok status_line
       else
-        critical status.to_s
+        critical status_line
       end
     end
   rescue => e
