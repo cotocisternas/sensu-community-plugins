@@ -51,7 +51,7 @@ class RabbitMQMetrics < Sensu::Plugin::Metric::CLI::Graphite
          description: 'RabbitMQ management API port',
          long: '--port PORT',
          proc: proc(&:to_i),
-         default: 15_672
+         default: 15672
 
   option :user,
          description: 'RabbitMQ management API user',

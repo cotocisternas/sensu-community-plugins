@@ -63,6 +63,12 @@ class CheckRabbitMQAlive < Sensu::Plugin::Check::CLI
          boolean: true,
          default: false
 
+  option :insecure,
+         description: 'Enable Insecure SSL connection to RabbitMQ',
+         long: '--insecure',
+         boolean: true,
+         default: false
+
   def run
     res = vhost_alive?
 
@@ -82,9 +88,10 @@ class CheckRabbitMQAlive < Sensu::Plugin::Check::CLI
     password = config[:password]
     vhost    = config[:vhost]
     ssl      = config[:ssl]
+    insecure = config[:insecure]
 
     begin
-      resource = RestClient::Resource.new "http#{ssl ? 's' : ''}://#{host}:#{port}/api/aliveness-test/#{vhost}", username, password
+      resource = RestClient::Resource.new "http#{ssl ? 's' : ''}://#{host}:#{port}/api/aliveness-test/#{vhost}", :user => username, :password => password, :verify_ssl => insecure ? OpenSSL::SSL::VERIFY_NONE : OpenSSL::SSL::VERIFY_PEER
       # Attempt to parse response (just to trigger parse exception)
       _response = JSON.parse(resource.get) == { 'status' => 'ok' }
       { 'status' => 'ok', 'message' => 'RabbitMQ server is alive' }

@@ -103,6 +103,18 @@ class CheckRabbitMQNodeHealth < Sensu::Plugin::Check::CLI
          long: '--alarms BOOLEAN',
          default: 'true'
 
+  option :ssl,
+         description: 'Enable SSL for connection to RabbitMQ',
+         long: '--ssl',
+         boolean: true,
+         default: false
+
+  option :insecure,
+         description: 'Enable Insecure SSL connection to RabbitMQ',
+         long: '--insecure',
+         boolean: true,
+         default: false
+
   def run
     res = node_healthy?
 
@@ -122,9 +134,11 @@ class CheckRabbitMQNodeHealth < Sensu::Plugin::Check::CLI
     port     = config[:port]
     username = config[:username]
     password = config[:password]
+    ssl      = config[:ssl]
+    insecure = config[:insecure]
 
     begin
-      resource = RestClient::Resource.new "http://#{host}:#{port}/api/nodes", username, password
+      resource = RestClient::Resource.new "http#{ssl ? 's' : ''}://#{host}:#{port}/api/nodes", :user => username, :password => password, :verify_ssl => insecure ? OpenSSL::SSL::VERIFY_NONE : OpenSSL::SSL::VERIFY_PEER
       # Parse our json data
       nodeinfo = JSON.parse(resource.get)[0]
 
