@@ -66,7 +66,7 @@ class ESClusterStatus < Sensu::Plugin::Check::CLI
          default: 80
 
   def get_es_resource(resource)
-    r = RestClient::Resource.new("http://#{config[:host]}:#{config[:port]}/#{resource}", timeout: config[:timeout])
+    r = RestClient::Resource.new("http://#{config[:host]}:#{config[:port]}#{resource}", timeout: config[:timeout])
     JSON.parse(r.get)
   rescue Errno::ECONNREFUSED
     warning 'Connection refused'
